@@ -1,6 +1,6 @@
+use human_bytes::human_bytes;
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::path::{Display, PathBuf};
-use human_bytes::human_bytes;
 
 #[derive(Debug)]
 pub struct AnalyzeTarget {
@@ -21,7 +21,8 @@ pub struct AnalyzeTargets(pub Vec<AnalyzeTarget>);
 impl From<&AnalyzeTarget> for Row {
     fn from(target: &AnalyzeTarget) -> Self {
         Row::new(vec![
-            Cell::new(&target.path.to_string_lossy()).with_style(Attr::ForegroundColor(color::GREEN)),
+            Cell::new(&target.path.to_string_lossy())
+                .with_style(Attr::ForegroundColor(color::GREEN)),
             Cell::new(human_bytes(target.size as f64).as_str()),
             Cell::new(&target.depth.to_string()),
         ])

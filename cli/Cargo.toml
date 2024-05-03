@@ -1,8 +1,8 @@
 [package]
-name = "dev-cleaner"
+name = "devclean"
 version = "0.1.0"
 edition = "2021"
-default-run = "dev-cleaner"
+default-run = "devclean"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

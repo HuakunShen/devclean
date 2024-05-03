@@ -1,12 +1,12 @@
-use std::path::PathBuf;
-
-use scanner::predicates::general::is_git_repo_clean;
+use git2::{Repository, StatusOptions};
+use scanner::{predicates::general::is_git_repo_clean, scanner::get_dirty_git_repo_scanner};
+use std::path::{Path, PathBuf};
 
 fn main() {
-    // let path = PathBuf::from("/Users/hacker/Dev/research/winden");
-    // let path = PathBuf::from("/Users/hacker/Dev/projects/Jarvis");
-    let path = PathBuf::from("/Users/hacker/Dev/projects/dev-cleaner");
-    let clean = is_git_repo_clean(path.as_path()).unwrap();
-    println!("Is git repo clean: {}", clean);
+    let p = PathBuf::from("/Users/hacker/Dev/");
+    let mut scanner = get_dirty_git_repo_scanner(p.as_path(), 5);
+    scanner.scan();
+    while let Ok(target) = scanner.task_rx.recv() {
+        println!("{:#?}", target);
+    }
 }
-

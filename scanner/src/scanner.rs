@@ -1,12 +1,14 @@
 use crate::predicates::{
-    languages::{node::NodeModulesPredicate, rust::RustTargetPredicate},
+    languages::{
+        git::GitDirtyRepoPredicate, node::NodeModulesPredicate, rust::RustTargetPredicate,
+    },
     stop::{HiddenDirStop, IsFileStop, Stop},
     Removable, Reportable,
 };
 use fs_extra::dir::get_size;
 use std::{
-    path::PathBuf,
-    sync::mpsc::{self, Sender},
+    path::{Path, PathBuf},
+    sync::mpsc::{self, Receiver, Sender},
 };
 
 #[derive(Debug)]
@@ -22,6 +24,7 @@ pub struct Scanner {
     depth: u16,
     path: PathBuf,
     task_tx: Option<Sender<AnalyzeTarget>>,
+    pub task_rx: Receiver<AnalyzeTarget>,
     /// Stop Scanning when any of the conditions are met
     stop_conditions: Vec<Box<dyn Stop>>,
     /// report to task_tx when any of the conditions are met
@@ -33,6 +36,7 @@ impl Scanner {
         path: PathBuf,
         depth: u16,
         task_tx: Sender<AnalyzeTarget>,
+        task_rx: Receiver<AnalyzeTarget>,
         stop_conditions: Vec<Box<dyn Stop>>,
         report_conditions: Vec<Box<dyn Reportable>>,
     ) -> Self {
@@ -40,6 +44,7 @@ impl Scanner {
             depth,
             path,
             task_tx: Some(task_tx),
+            task_rx,
             stop_conditions,
             report_conditions,
         }
@@ -82,4 +87,41 @@ impl Scanner {
         self.walk(&self.path.clone(), 0);
         drop(self.task_tx.take().unwrap());
     }
+
+    pub fn set_depth(&mut self, depth: u16) {
+        self.depth = depth;
+    }
+}
+
+pub fn get_dirty_git_repo_scanner(path: &Path, depth: u16) -> Scanner {
+    let (tx, rx) = mpsc::channel::<AnalyzeTarget>(); // Add type annotation for T
+    let stop_conditions: Vec<Box<dyn Stop>> =
+        vec![Box::new(IsFileStop {}), Box::new(HiddenDirStop {})];
+    let report_conditions: Vec<Box<dyn Reportable>> = vec![Box::new(GitDirtyRepoPredicate {})];
+    Scanner::new(
+        PathBuf::from(path),
+        depth,
+        tx,
+        rx,
+        stop_conditions,
+        report_conditions,
+    )
+}
+
+pub fn get_project_garbage_scanner(path: &Path, depth: u16) -> Scanner {
+    let (tx, rx) = mpsc::channel::<AnalyzeTarget>(); // Add type annotation for T
+    let stop_conditions: Vec<Box<dyn Stop>> =
+        vec![Box::new(IsFileStop {}), Box::new(HiddenDirStop {})];
+    let report_conditions: Vec<Box<dyn Reportable>> = vec![
+        Box::new(RustTargetPredicate {}),
+        Box::new(NodeModulesPredicate {}),
+    ];
+    Scanner::new(
+        PathBuf::from(path),
+        depth,
+        tx,
+        rx,
+        stop_conditions,
+        report_conditions,
+    )
 }

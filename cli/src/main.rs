@@ -23,6 +23,16 @@ struct Args {
 
     #[arg(long, help = "Dry Run", default_value = "false")]
     dry_run: bool,
+
+    #[arg(
+        short,
+        long,
+        help = "Clean all without Confirmation",
+        default_value = "false"
+    )]
+    all: bool,
+    // #[arg(short, long, help = "No Need to Confirm", default_value = "false")]
+    // yes: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -38,12 +48,14 @@ enum Commands {
 struct Cleaner {
     bytes_cleaned: u128,
     dry_run: bool,
+    need_confirm: bool,
 }
 impl Cleaner {
-    fn new(dry_run: bool) -> Self {
+    fn new(dry_run: bool, all: bool) -> Self {
         Cleaner {
             bytes_cleaned: 0,
             dry_run,
+            need_confirm: !all,
         }
     }
     fn prompt_clean(&mut self, target: &AnalyzeTarget) -> Result<()> {
@@ -62,13 +74,19 @@ impl Cleaner {
             human_bytes(size as f64),
             human_modified_ago
         );
-        if self.dry_run {
-            print!("(Dry Run)  ");
+        if self.need_confirm {
+            if self.dry_run {
+                print!("(Dry Run)  ");
+            }
+            print!("Do you want to clean this directory? [y/N]:");
         }
-        print!("Do you want to clean this directory? [y/N]:");
         std::io::stdout().flush()?;
         let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
+        if self.need_confirm {
+            std::io::stdin().read_line(&mut input)?;
+        } else {
+            input = "y".to_string();
+        }
         if input.trim().to_lowercase() == "y" {
             if self.dry_run {
                 print!("(Dry Run)  ");
@@ -104,8 +122,9 @@ fn main() -> Result<()> {
             let path = std::fs::canonicalize(path)?;
             let mut removable_scanner = get_project_garbage_scanner(path.as_path(), args.depth);
             removable_scanner.scan();
+            println!("Finish Scanning!");
             let mut targets = Vec::new();
-            let mut cleaner = Cleaner::new(args.dry_run);
+            let mut cleaner = Cleaner::new(args.dry_run, args.all);
             while let Ok(target) = removable_scanner.task_rx.recv() {
                 cleaner.prompt_clean(&target)?;
                 targets.push(target);

@@ -2,6 +2,7 @@ use clap::{Parser, Subcommand};
 use color_eyre::Result;
 use fs_extra::dir::get_size;
 use human_bytes::human_bytes;
+use humantime;
 use scanner::{
     results::{AnalyzeTarget, AnalyzeTargets},
     scanner::{get_dirty_git_repo_scanner, get_project_garbage_scanner},
@@ -49,12 +50,17 @@ impl Cleaner {
         let parent = target.path.parent().unwrap();
         let dir_name: String = target.path.file_name().unwrap().to_string_lossy().into();
         let size = get_size(target.path.clone())?;
+        let last_modified = target.path.metadata()?.modified()?;
+        let human_modified_ago = humantime::format_duration(std::time::Duration::from_secs(
+            last_modified.elapsed()?.as_secs(),
+        ));
         self.bytes_cleaned += size as u128;
         println!(
-            "{}\n  └─ {} ({})",
+            "{}\n  └─ {} ({}) \t\t({} seconds ago)",
             parent.display(),
             dir_name,
-            human_bytes(size as f64)
+            human_bytes(size as f64),
+            human_modified_ago
         );
         if self.dry_run {
             print!("(Dry Run)  ");

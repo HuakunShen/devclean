@@ -48,7 +48,7 @@ impl Scanner {
         if depth > self.depth {
             return;
         }
-        let task_tx = self.task_tx.as_mut().unwrap().clone();
+        let task_tx = self.task_tx.as_ref().unwrap().clone();
         for remove_condition in &self.remove_conditions {
             if remove_condition.is_removable(&path) {
                 // println!("Remove: {:?}", path);
@@ -62,6 +62,8 @@ impl Scanner {
                 return;
             }
         }
+        drop(task_tx);
+
         for stop_condition in &self.general_stop_conditions {
             if stop_condition.stop(&path) {
                 return;
@@ -77,7 +79,6 @@ impl Scanner {
             let entry = entry.unwrap();
             self.walk(&entry.path(), depth + 1);
         }
-        drop(task_tx);
         if depth == 0 {
             println!("Drop tx");
         }
@@ -86,7 +87,6 @@ impl Scanner {
 
     fn scan(&mut self) {
         self.walk(&self.path.clone(), 0);
-        println!("Drop Sender");
         let x = self.task_tx.take(); // This takes the sender out of the Option and drops it
         drop(x.unwrap());
     }
@@ -105,15 +105,12 @@ fn main() {
     let mut scanner = Scanner::new(
         PathBuf::from("/Users/hacker/Dev/research/winden"),
         5,
-        tx.clone(),
+        tx,
         stop_conditions,
         remove_conditions,
     );
     scanner.scan();
-    // drop(tx);
     while let Ok(target) = rx.recv() {
         println!("{:?}", target);
     }
-
-    println!("Done");
 }

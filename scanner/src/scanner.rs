@@ -55,7 +55,7 @@ impl Scanner {
                 task_tx
                     .send(AnalyzeTarget::new(
                         path.clone(),
-                        get_size(path).unwrap_or(0),
+                        // get_size(path).unwrap_or(0),
                         depth,
                     ))
                     .unwrap();

@@ -44,7 +44,7 @@ fn main() -> Result<()> {
             while let Ok(target) = scanner.task_rx.recv() {
                 targets.push(target);
             }
-            AnalyzeTargets(targets).sort_by_size().to_table().printstd();
+            AnalyzeTargets(targets).to_table().printstd();
         }
         None => {
             let path = args.path.unwrap_or_else(|| PathBuf::from("."));
@@ -55,7 +55,7 @@ fn main() -> Result<()> {
             while let Ok(target) = removable_scanner.task_rx.recv() {
                 targets.push(target);
             }
-            AnalyzeTargets(targets).sort_by_size().to_table().printstd();
+            AnalyzeTargets(targets).to_table().printstd();
         }
     }
 

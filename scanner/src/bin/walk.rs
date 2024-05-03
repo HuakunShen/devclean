@@ -43,8 +43,6 @@ impl Scanner {
         }
     }
     fn walk(&mut self, path: &PathBuf, depth: u16) {
-        // let tx_clone = self.task_tx.clone();
-
         if depth > self.depth {
             return;
         }

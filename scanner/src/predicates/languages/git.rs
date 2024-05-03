@@ -1,5 +1,5 @@
 use super::LanguagePredicate;
-use crate::predicates::{general::is_git_repo_clean, Reportable};
+use crate::predicates::Reportable;
 use color_eyre::eyre::Result;
 use git2::{Repository, StatusOptions};
 use std::path::Path;

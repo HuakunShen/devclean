@@ -1,6 +1,5 @@
-use human_bytes::human_bytes;
 use prettytable::{color, Attr, Cell, Row, Table};
-use std::path::{Display, PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct AnalyzeTarget {

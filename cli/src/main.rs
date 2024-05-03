@@ -1,6 +1,5 @@
 use clap::{Parser, Subcommand};
 use color_eyre::Result;
-use prettytable::{color, Attr, Cell, Row, Table};
 use scanner::{
     results::AnalyzeTargets,
     scanner::{get_dirty_git_repo_scanner, get_project_garbage_scanner},

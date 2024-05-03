@@ -1,6 +1,6 @@
 use color_eyre::eyre::Result;
 use git2::Repository;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 // Git
 pub fn is_git_repo(path: &Path) -> bool {

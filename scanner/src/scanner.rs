@@ -4,11 +4,10 @@ use crate::{
             git::GitDirtyRepoPredicate, node::NodeModulesPredicate, rust::RustTargetPredicate,
         },
         stop::{HiddenDirStop, IsFileStop, Stop},
-        Removable, Reportable,
+        Reportable,
     },
     results::AnalyzeTarget,
 };
-use fs_extra::dir::get_size;
 use std::{
     path::{Path, PathBuf},
     sync::mpsc::{self, Receiver, Sender},

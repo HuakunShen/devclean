@@ -1,9 +1,8 @@
 use std::path::Path;
-
 pub mod general;
+pub mod languages;
 pub mod stop;
 pub use stop::Stop;
-pub mod languages;
 
 pub trait Removable {
     fn is_removable(&self, path: &Path) -> bool;

@@ -1,8 +1,6 @@
 use super::LanguagePredicate;
 use crate::predicates::{Removable, Reportable, Stop};
-use fs_extra::dir::get_size;
-use human_bytes::human_bytes;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub struct RustTargetPredicate;

@@ -1,6 +1,6 @@
 use super::LanguagePredicate;
 use crate::predicates::{Removable, Reportable, Stop};
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[derive(Debug, Clone)]
 pub struct NodeModulesPredicate;

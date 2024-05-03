@@ -85,7 +85,6 @@ impl Scanner {
 
     pub fn scan(&mut self) {
         self.walk(&self.path.clone(), 0);
-        let x = self.task_tx.take(); // This takes the sender out of the Option and drops it
-        drop(x.unwrap());
+        drop(self.task_tx.take().unwrap());
     }
 }

@@ -1,5 +1,5 @@
 use super::LanguagePredicate;
-use crate::predicates::{Removable, Stop};
+use crate::predicates::{Removable, Reportable, Stop};
 use fs_extra::dir::get_size;
 use human_bytes::human_bytes;
 use std::path::{Path, PathBuf};
@@ -35,5 +35,11 @@ impl Removable for RustTargetPredicate {
 impl Stop for RustTargetPredicate {
     fn stop(&self, path: &Path) -> bool {
         self.is_in_rust_project(path) && self.is_target(path)
+    }
+}
+
+impl Reportable for RustTargetPredicate {
+    fn report(&self, path: &Path) -> bool {
+        self.is_removable(path)
     }
 }

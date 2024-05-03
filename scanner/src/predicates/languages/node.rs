@@ -1,5 +1,5 @@
 use super::LanguagePredicate;
-use crate::predicates::{Removable, Stop};
+use crate::predicates::{Removable, Reportable, Stop};
 use std::path::{Path, PathBuf};
 
 #[derive(Debug, Clone)]
@@ -33,5 +33,11 @@ impl Removable for NodeModulesPredicate {
 impl Stop for NodeModulesPredicate {
     fn stop(&self, path: &Path) -> bool {
         self.is_in_project(path) && self.is_node_modules(path)
+    }
+}
+
+impl Reportable for NodeModulesPredicate {
+    fn report(&self, path: &Path) -> bool {
+        self.is_removable(path)
     }
 }

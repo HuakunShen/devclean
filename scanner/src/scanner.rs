@@ -1,9 +1,9 @@
-use fs_extra::dir::get_size;
 use crate::predicates::{
     languages::{node::NodeModulesPredicate, rust::RustTargetPredicate},
     stop::{HiddenDirStop, IsFileStop, Stop},
-    Removable,
+    Removable, Reportable,
 };
+use fs_extra::dir::get_size;
 use std::{
     path::PathBuf,
     sync::mpsc::{self, Sender},
@@ -16,13 +16,16 @@ pub struct AnalyzeTarget {
     depth: u16,
 }
 
+/// A scanner walks through directories following the depth constraint and stop conditions
+/// All valid paths are sent to the task_tx channel for further processing
 pub struct Scanner {
     depth: u16,
     path: PathBuf,
     task_tx: Option<Sender<AnalyzeTarget>>,
-    general_stop_conditions: Vec<Box<dyn Stop>>,
+    /// Stop Scanning when any of the conditions are met
     stop_conditions: Vec<Box<dyn Stop>>,
-    remove_conditions: Vec<Box<dyn Removable>>,
+    /// report to task_tx when any of the conditions are met
+    report_conditions: Vec<Box<dyn Reportable>>,
 }
 
 impl Scanner {
@@ -31,25 +34,23 @@ impl Scanner {
         depth: u16,
         task_tx: Sender<AnalyzeTarget>,
         stop_conditions: Vec<Box<dyn Stop>>,
-        remove_conditions: Vec<Box<dyn Removable>>,
+        report_conditions: Vec<Box<dyn Reportable>>,
     ) -> Self {
         Scanner {
             depth,
             path,
             task_tx: Some(task_tx),
-            general_stop_conditions: vec![Box::new(HiddenDirStop {}), Box::new(IsFileStop {})],
             stop_conditions,
-            remove_conditions,
+            report_conditions,
         }
     }
     pub fn walk(&mut self, path: &PathBuf, depth: u16) {
         if depth > self.depth {
             return;
         }
-        let task_tx = self.task_tx.as_ref().unwrap().clone();
-        for remove_condition in &self.remove_conditions {
-            if remove_condition.is_removable(&path) {
-                // println!("Remove: {:?}", path);
+        let task_tx = self.task_tx.as_ref().unwrap();
+        for condition in &self.report_conditions {
+            if condition.report(&path) {
                 task_tx
                     .send(AnalyzeTarget {
                         path: path.clone(),
@@ -60,25 +61,19 @@ impl Scanner {
                 return;
             }
         }
-        drop(task_tx);
 
-        for stop_condition in &self.general_stop_conditions {
+        for stop_condition in &self.stop_conditions {
             if stop_condition.stop(&path) {
                 return;
             }
         }
-        for stop_condition in &self.stop_conditions {
-            if stop_condition.stop(&path) {
-                println!("Stop: {:?}", path);
-                return;
-            }
+
+        if path.is_file() {
+            return;
         }
         for entry in path.read_dir().unwrap() {
             let entry = entry.unwrap();
             self.walk(&entry.path(), depth + 1);
-        }
-        if depth == 0 {
-            println!("Drop tx");
         }
         return;
     }

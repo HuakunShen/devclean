@@ -8,3 +8,7 @@ pub mod languages;
 pub trait Removable {
     fn is_removable(&self, path: &Path) -> bool;
 }
+
+pub trait Reportable {
+    fn report(&self, path: &Path) -> bool;
+}

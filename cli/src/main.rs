@@ -1,10 +1,12 @@
 use clap::{Parser, Subcommand};
 use color_eyre::Result;
+use fs_extra::dir::get_size;
+use human_bytes::human_bytes;
 use scanner::{
-    results::AnalyzeTargets,
+    results::{AnalyzeTarget, AnalyzeTargets},
     scanner::{get_dirty_git_repo_scanner, get_project_garbage_scanner},
 };
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -27,6 +29,27 @@ enum Commands {
         #[arg(short, long, help = "Depth Limit", default_value = "10")]
         depth: u16,
     },
+}
+
+fn ask_clean(target: &AnalyzeTarget) -> Result<()> {
+    let parent = target.path.parent().unwrap();
+    let dir_name: String = target.path.file_name().unwrap().to_string_lossy().into();
+    let size = get_size(target.path.clone())?;
+    println!(
+        "{}\n\t└─ {} ({})",
+        parent.display(),
+        dir_name,
+        human_bytes(size as f64)
+    );
+    print!("Do you want to clean this directory? [y/N]:");
+    std::io::stdout().flush()?;
+    let mut input = String::new();
+    std::io::stdin().read_line(&mut input)?;
+    if input.trim().to_lowercase() == "y" {
+        println!("Cleaning {}", target.path.display());
+        std::fs::remove_dir_all(&target.path)?;
+    }
+    Ok(())
 }
 
 fn main() -> Result<()> {
@@ -52,9 +75,10 @@ fn main() -> Result<()> {
             removable_scanner.scan();
             let mut targets = Vec::new();
             while let Ok(target) = removable_scanner.task_rx.recv() {
+                ask_clean(&target);
                 targets.push(target);
             }
-            AnalyzeTargets(targets).to_table().printstd();
+            // AnalyzeTargets(targets).to_table().printstd();
         }
     }
 

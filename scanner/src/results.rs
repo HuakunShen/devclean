@@ -3,9 +3,8 @@ use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct AnalyzeTarget {
-    path: PathBuf,
-    // size: u64,
-    depth: u16,
+    pub path: PathBuf,
+    pub depth: u16,
 }
 
 impl AnalyzeTarget {

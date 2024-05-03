@@ -1,0 +1,12 @@
+[package]
+name = "dev-cleaner"
+version = "0.1.0"
+edition = "2021"
+default-run = "dev-cleaner"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { version = "4.5.4", features = ["derive", "cargo"] }
+color-eyre = "0.6.3"
+prettytable = "0.10.0"
+scanner = { path = "../scanner" }

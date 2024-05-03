@@ -1,22 +1,18 @@
-use crate::predicates::{
-    languages::{
-        git::GitDirtyRepoPredicate, node::NodeModulesPredicate, rust::RustTargetPredicate,
+use crate::{
+    predicates::{
+        languages::{
+            git::GitDirtyRepoPredicate, node::NodeModulesPredicate, rust::RustTargetPredicate,
+        },
+        stop::{HiddenDirStop, IsFileStop, Stop},
+        Removable, Reportable,
     },
-    stop::{HiddenDirStop, IsFileStop, Stop},
-    Removable, Reportable,
+    results::AnalyzeTarget,
 };
 use fs_extra::dir::get_size;
 use std::{
     path::{Path, PathBuf},
     sync::mpsc::{self, Receiver, Sender},
 };
-
-#[derive(Debug)]
-pub struct AnalyzeTarget {
-    path: PathBuf,
-    size: u64,
-    depth: u16,
-}
 
 /// A scanner walks through directories following the depth constraint and stop conditions
 /// All valid paths are sent to the task_tx channel for further processing
@@ -57,11 +53,11 @@ impl Scanner {
         for condition in &self.report_conditions {
             if condition.report(&path) {
                 task_tx
-                    .send(AnalyzeTarget {
-                        path: path.clone(),
-                        size: get_size(path).unwrap_or(0),
+                    .send(AnalyzeTarget::new(
+                        path.clone(),
+                        get_size(path).unwrap_or(0),
                         depth,
-                    })
+                    ))
                     .unwrap();
                 return;
             }

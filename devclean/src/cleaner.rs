@@ -2,8 +2,8 @@ use color_eyre::Result;
 use fs_extra::dir::get_size;
 use human_bytes::human_bytes;
 use indicatif::ProgressBar;
-use scanner::results::AnalyzeTarget;
-use std::{io::Write, time::Duration};
+use crate::results::AnalyzeTarget;
+use std::io::Write;
 
 pub struct Cleaner {
     pub bytes_cleaned: u128,
@@ -24,7 +24,9 @@ impl Cleaner {
             if !self.dry_run {
                 std::fs::remove_dir_all(&target.path)?;
             }
-            let size = target.size.unwrap_or_else(|| get_size(target.path.clone()).unwrap_or(0));
+            let size = target
+                .size
+                .unwrap_or_else(|| get_size(target.path.clone()).unwrap_or(0));
             self.bytes_cleaned += size as u128;
             pb.inc(1);
         }

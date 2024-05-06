@@ -1,7 +1,7 @@
 use std::path::Path;
 
 // This file contains predicates for stopping the scan process such as is_hidden
-pub trait Stop {
+pub trait Stop: Send + Sync {
     /// Check if the scan process can be stopped
     fn stop(&self, path: &Path) -> bool;
 }

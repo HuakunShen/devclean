@@ -47,29 +47,23 @@ enum Commands {
 fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::parse();
-
     match args.command {
         Some(Commands::FindDirtyGit { path, depth }) => {
             let path = path.unwrap_or_else(|| PathBuf::from("."));
-            // turn p into absolute path
             let path = std::fs::canonicalize(path)?;
-            let mut scanner = get_dirty_git_repo_scanner(path.as_path(), depth, false);
-            scanner.scan();
-            let mut targets = vec![];
-            while let Ok(target) = scanner.task_rx.recv() {
-                targets.push(target);
-            }
-            AnalyzeTargets(targets).to_table().printstd();
+            let scanner = get_dirty_git_repo_scanner(depth, true);
+            let found = scanner.scan_parallel(&path, 0);
+            AnalyzeTargets(found).to_table().printstd();
         }
         None => {
             let mut path = args.path.unwrap_or_else(|| PathBuf::from("."));
             if !args.relative {
                 path = std::fs::canonicalize(path)?;
             }
-            let mut removable_scanner =
-                get_project_garbage_scanner(path.as_path(), args.depth, true);
+            let removable_scanner = get_project_garbage_scanner(args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
-            let mut target_paths = removable_scanner.scan_recursive(&path, 0);
+            let start = std::time::Instant::now();
+            let mut target_paths = removable_scanner.scan_parallel(&path, 0);
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {
                 target_paths.clone()
@@ -81,8 +75,16 @@ fn main() -> Result<()> {
                     // Select No by default
                     vec![false; target_paths.len()]
                 };
+                let mut prompt = format!("Pick directories to clean");
+                if args.all {
+                    prompt += " (All Selected by Default)";
+                }
+                if args.dry_run {
+                    prompt += " (Dry Run)";
+                }
+
                 let selections = MultiSelect::with_theme(&ColorfulTheme::default())
-                    .with_prompt("Pick the directories to clean")
+                    .with_prompt(prompt)
                     .items(&target_paths)
                     .defaults(&default_selection[..])
                     .interact()?;
@@ -93,13 +95,12 @@ fn main() -> Result<()> {
                 to_clean
             };
             cleaner.clean_all(&to_clean)?;
+            AnalyzeTargets(to_clean).to_table().printstd();
             println!(
                 "Total Bytes Cleaned: {}",
                 human_bytes(cleaner.bytes_cleaned as f64)
             );
-            AnalyzeTargets(to_clean).to_table().printstd();
         }
     }
-
     Ok(())
 }

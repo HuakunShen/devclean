@@ -1,0 +1,106 @@
+{
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devPath": "http://localhost:1420",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "devclean-ui",
+    "version": "0.1.0"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "clipboard": {
+        "all": false,
+        "readText": false,
+        "writeText": true
+      },
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
+      "fs": {
+        "exists": true
+      },
+      "shell": {
+        "all": false,
+        "open": true
+      },
+      "window": {
+        "all": false,
+        "center": false,
+        "close": false,
+        "create": false,
+        "hide": false,
+        "maximize": false,
+        "minimize": false,
+        "print": false,
+        "requestUserAttention": false,
+        "setAlwaysOnTop": false,
+        "setClosable": false,
+        "setContentProtected": false,
+        "setCursorGrab": false,
+        "setCursorIcon": false,
+        "setCursorPosition": false,
+        "setCursorVisible": false,
+        "setDecorations": false,
+        "setFocus": false,
+        "setFullscreen": false,
+        "setIcon": false,
+        "setIgnoreCursorEvents": false,
+        "setMaxSize": false,
+        "setMaximizable": false,
+        "setMinSize": false,
+        "setMinimizable": false,
+        "setPosition": false,
+        "setResizable": false,
+        "setSize": false,
+        "setSkipTaskbar": false,
+        "setTitle": false,
+        "show": false,
+        "startDragging": true,
+        "unmaximize": false,
+        "unminimize": false
+      }
+    },
+    "windows": [
+      {
+        "title": "devclean-ui",
+        "width": 800,
+        "height": 600,
+        "titleBarStyle": "Overlay"
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "bundle": {
+      "active": true,
+      "targets": "all",
+      "identifier": "devclean-ui.huakun.tech",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ]
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoints": ["https://github.com/HuakunShen/devclean/releases/latest/download/latest.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZFNENCMzRGOTQ2RDQwQTkKUldTcFFHMlVUN05NL3NmYmdmMWJ2L2FuWWltU28xTXZwZ1lzMDRzaE1sUlFJSEJzQVhZVWxiSFQK",
+      "windows": {
+        "installMode": "passive",
+        "installerArgs": []
+      }
+    }
+  }
+}

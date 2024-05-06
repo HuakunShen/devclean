@@ -154,7 +154,7 @@ impl Scanner {
             })
             .collect();
         targets.extend(results);
-        if depth == 0 {
+        if depth == 0 && self.pb.is_some() {
             self.pb
                 .as_ref()
                 .unwrap()
@@ -206,6 +206,8 @@ pub fn get_dirty_git_repo_scanner(depth: u16, pb: bool) -> Scanner {
     )
 }
 
+/// Get a scanner for Rust and Node.js projects
+/// pb is whether project bar should be displayed
 pub fn get_project_garbage_scanner(depth: u16, pb: bool) -> Scanner {
     // let (tx, rx) = mpsc::channel::<AnalyzeTarget>(); // Add type annotation for T
     let stop_conditions: Vec<Box<dyn Stop>> =

@@ -20,4 +20,5 @@ humantime = "2.1.0"
 indicatif = "0.17.8"
 prettytable-rs = "0.10.0"
 rayon = "1.10.0"
+serde = { version = "1.0.200", features = ["derive"] }
 walkdir = "2.5.0"

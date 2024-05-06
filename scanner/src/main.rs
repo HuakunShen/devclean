@@ -1,12 +1,12 @@
 use clap::{Parser, Subcommand};
 use color_eyre::Result;
-use devclean::Cleaner;
-use dialoguer::{theme::ColorfulTheme, MultiSelect};
-use human_bytes::human_bytes;
-use scanner::{
+use devclean::cleaner::Cleaner;
+use devclean::{
     results::AnalyzeTargets,
     scanner::{get_dirty_git_repo_scanner, get_project_garbage_scanner},
 };
+use dialoguer::{theme::ColorfulTheme, MultiSelect};
+use human_bytes::human_bytes;
 use std::path::PathBuf;
 
 /// Simple program to greet a person
@@ -62,7 +62,6 @@ fn main() -> Result<()> {
             }
             let removable_scanner = get_project_garbage_scanner(args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
-            let start = std::time::Instant::now();
             let mut target_paths = removable_scanner.scan_parallel(&path, 0);
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {

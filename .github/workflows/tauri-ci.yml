@@ -1,4 +1,4 @@
-name: 'publish'
+name: "publish"
 
 on:
   push:
@@ -14,14 +14,14 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - platform: 'macos-14' # for Arm based macs (M1 and above).
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-14' # for Intel based macs.
-            args: '--target universal-apple-darwin'
-          # - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
-          #   args: ''
-          # - platform: 'windows-latest'
-          #   args: ''
+          - platform: "macos-14" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-14" # for Intel based macs.
+            args: "--target universal-apple-darwin"
+          - platform: "ubuntu-22.04" # for Tauri v1 you could replace this with ubuntu-20.04.
+            args: ""
+          - platform: "windows-latest"
+            args: ""
 
     runs-on: ${{ matrix.settings.platform }}
     steps:
@@ -35,17 +35,17 @@ jobs:
         # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
       - name: Add Mac Target
-        if: matrix.settings.platform == 'macos-14' # This must match the platform value defined above.
+        if: matrix.settings.platform == 'macos-14'
         run: |
           brew install openssl
           # rustup target add x86_64-apple-darwin
           # rustup target add aarch64-apple-darwin
-          
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: 'npm' # Set this to npm, yarn or pnpm.
+          cache: "npm" # Set this to npm, yarn or pnpm.
           cache-dependency-path: ./devclean-ui/package-lock.json
 
       - name: install Rust stable
@@ -57,22 +57,35 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './devclean-ui/src-tauri -> target'
+          workspaces: "./devclean-ui/src-tauri -> target"
 
       - name: install frontend dependencies
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
         run: npm install # change this to npm or pnpm depending on which one you use.
         working-directory: ./devclean-ui
-
       - name: Tauri Build
+        if: matrix.settings.platform != 'macos-14'
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.settings.args }}
+          projectPath: ./devclean-ui
+      - name: Tauri Build
+        if: matrix.settings.platform == 'macos-14'
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENSSL_DIR: /opt/homebrew/opt/openssl@3
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
-          releaseName: 'App v__VERSION__'
-          releaseBody: 'See the assets to download this version and install.'
+          releaseName: "App v__VERSION__"
+          releaseBody: "See the assets to download this version and install."
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.settings.args }}

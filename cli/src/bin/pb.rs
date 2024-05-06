@@ -2,8 +2,7 @@ use indicatif::{ProgressBar, ProgressStyle};
 
 fn main() {
     let pb = ProgressBar::new(1);
-    let spinner_style =
-        ProgressStyle::with_template("{spinner} {wide_msg}").unwrap();
+    let spinner_style = ProgressStyle::with_template("{spinner} {wide_msg}").unwrap();
     pb.set_style(spinner_style);
     for i in 0..100 {
         pb.set_message(format!("{i}:"));

@@ -95,11 +95,11 @@ fn main() -> Result<()> {
                 to_clean
             };
             cleaner.clean_all(&to_clean)?;
+            AnalyzeTargets(to_clean).to_table().printstd();
             println!(
                 "Total Bytes Cleaned: {}",
                 human_bytes(cleaner.bytes_cleaned as f64)
             );
-            AnalyzeTargets(to_clean).to_table().printstd();
         }
     }
     Ok(())

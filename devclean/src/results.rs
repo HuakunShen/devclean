@@ -1,9 +1,10 @@
 use human_bytes::human_bytes;
 use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AnalyzeTarget {
     pub path: PathBuf,
     pub depth: u16,
@@ -39,7 +40,7 @@ impl AnalyzeTarget {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AnalyzeTargets(pub Vec<AnalyzeTarget>);
 
 impl From<&AnalyzeTarget> for Row {

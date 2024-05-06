@@ -47,7 +47,6 @@ enum Commands {
 fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::parse();
-
     match args.command {
         Some(Commands::FindDirtyGit { path, depth }) => {
             let path = path.unwrap_or_else(|| PathBuf::from("."));
@@ -70,6 +69,7 @@ fn main() -> Result<()> {
                 get_project_garbage_scanner(path.as_path(), args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
             let mut target_paths = removable_scanner.scan_recursive(&path, 0);
+
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {
                 target_paths.clone()
@@ -100,6 +100,5 @@ fn main() -> Result<()> {
             AnalyzeTargets(to_clean).to_table().printstd();
         }
     }
-
     Ok(())
 }

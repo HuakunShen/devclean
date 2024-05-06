@@ -1,4 +1,5 @@
 use human_bytes::human_bytes;
+use prettytable::format::{self, FormatBuilder, LinePosition};
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::path::PathBuf;
 
@@ -49,7 +50,8 @@ impl From<&AnalyzeTarget> for Row {
 impl From<&AnalyzeTargets> for Table {
     fn from(targets: &AnalyzeTargets) -> Self {
         let mut table = Table::new();
-        table.add_row(Row::new(vec![
+        table.set_format(*format::consts::FORMAT_NO_BORDER_LINE_SEPARATOR);
+        table.set_titles(Row::new(vec![
             Cell::new("Path").with_style(Attr::Bold),
             Cell::new("Depth").with_style(Attr::Bold),
             Cell::new("Size").with_style(Attr::Bold),

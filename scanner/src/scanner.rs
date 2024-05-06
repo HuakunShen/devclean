@@ -1,6 +1,3 @@
-use fs_extra::dir::get_size;
-use indicatif::{ProgressBar, ProgressStyle};
-
 use crate::{
     predicates::{
         languages::{
@@ -11,6 +8,9 @@ use crate::{
     },
     results::AnalyzeTarget,
 };
+use fs_extra::dir::get_size;
+use indicatif::{ProgressBar, ProgressStyle};
+use rayon::prelude::*;
 use std::{
     path::{Path, PathBuf},
     sync::mpsc::{self, Receiver, Sender},
@@ -93,7 +93,7 @@ impl Scanner {
         return;
     }
 
-    pub fn scan_recursive(&mut self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
+    pub fn _scan_recursive(&mut self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
         if self.pb.is_some() {
             if path.is_dir() {
                 self.pb
@@ -108,11 +108,7 @@ impl Scanner {
         let mut targets = vec![];
         for condition in &self.report_conditions {
             if condition.report(&path) {
-                targets.push(AnalyzeTarget::new(
-                    path.clone(),
-                    depth,
-                    Some(get_size(path).unwrap_or(0)),
-                ));
+                targets.push(AnalyzeTarget::new(path.clone(), depth, None));
                 return targets;
             }
         }
@@ -126,7 +122,7 @@ impl Scanner {
         }
         for entry in path.read_dir().unwrap() {
             let entry = entry.unwrap();
-            targets.extend(self.scan_recursive(&entry.path(), depth + 1))
+            targets.extend(self._scan_recursive(&entry.path(), depth + 1))
         }
         if depth == 0 {
             self.pb
@@ -137,6 +133,17 @@ impl Scanner {
         return targets;
     }
 
+    /// This function fills the size field of the AnalyzeTarget in parallel
+    pub fn scan_recursive(&mut self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
+        let start = std::time::Instant::now();
+        let mut targets = self._scan_recursive(path, depth);
+        // fill targets size field in parallel
+        targets.par_iter_mut().for_each(|target| {
+            target.size = Some(get_size(&target.path).unwrap_or(0));
+        });
+        println!("Scan Finished in {:?}", start.elapsed());
+        targets
+    }
     pub fn scan(&mut self) {
         self.walk(&self.path.clone(), 0);
         drop(self.task_tx.take().unwrap());

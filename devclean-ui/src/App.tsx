@@ -28,7 +28,7 @@ function App() {
         </Button>
         <ModeToggle />
         <PathDisplay targets={targets} className="h-96" />
-        <DisplayTable />
+        <DisplayTable data={targets} />
       </div>
     </ThemeProvider>
   );

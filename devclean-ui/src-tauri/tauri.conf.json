@@ -91,6 +91,16 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ]
+    },
+    "updater": {
+      "active": true,
+      "dialog": true,
+      "endpoints": ["https://github.com/HuakunShen/devclean/releases/latest/download/latest.json"],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEZFNENCMzRGOTQ2RDQwQTkKUldTcFFHMlVUN05NL3NmYmdmMWJ2L2FuWWltU28xTXZwZ1lzMDRzaE1sUlFJSEJzQVhZVWxiSFQK",
+      "windows": {
+        "installMode": "passive",
+        "installerArgs": []
+      }
     }
   }
 }

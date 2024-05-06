@@ -11,8 +11,8 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { writeText, readText } from "@tauri-apps/api/clipboard";
+import { ChevronDown, MoreHorizontal } from "lucide-react";
+import { writeText } from "@tauri-apps/api/clipboard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -21,7 +21,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -39,6 +38,7 @@ import prettyBytes from "pretty-bytes";
 import { delete_dir } from "@/lib/command";
 import { toast, useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { PathHighlight } from "../path-highlight";
 
 export const columns: ColumnDef<PathDisplayRow>[] = [
   {
@@ -66,7 +66,12 @@ export const columns: ColumnDef<PathDisplayRow>[] = [
   {
     accessorKey: "path",
     header: "Path",
-    cell: ({ row }) => <div>{row.getValue("path")}</div>,
+    cell: ({ row }) => (
+      <div>
+        {" "}
+        <PathHighlight path={row.getValue("path")} />
+      </div>
+    ),
   },
   {
     accessorKey: "size",

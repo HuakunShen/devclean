@@ -13,7 +13,7 @@ use std::path::PathBuf;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = None)]
+#[command(version, about, long_about = "A simple program to clean up project directories.")]
 struct Args {
     #[command(subcommand)]
     command: Option<Commands>,

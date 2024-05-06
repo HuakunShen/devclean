@@ -29,6 +29,9 @@ struct Args {
 
     #[arg(short, long, help = "No Need to Confirm", default_value = "false")]
     yes: bool,
+
+    #[arg(long, help = "Display Relative Path", default_value = "true")]
+    relative: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -59,8 +62,10 @@ fn main() -> Result<()> {
             AnalyzeTargets(targets).to_table().printstd();
         }
         None => {
-            let path = args.path.unwrap_or_else(|| PathBuf::from("."));
-            let path = std::fs::canonicalize(path)?;
+            let mut path = args.path.unwrap_or_else(|| PathBuf::from("."));
+            if !args.relative {
+                path = std::fs::canonicalize(path)?;
+            }
             let mut removable_scanner =
                 get_project_garbage_scanner(path.as_path(), args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);

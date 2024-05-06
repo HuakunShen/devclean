@@ -38,7 +38,8 @@ import prettyBytes from "pretty-bytes";
 import { delete_dir } from "@/lib/command";
 import { toast, useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
-import { PathHighlight } from "../path-highlight";
+import { PathHighlight } from "@/components/path-highlight";
+import {open} from '@tauri-apps/api/shell';
 
 export const columns: ColumnDef<PathDisplayRow>[] = [
   {
@@ -127,6 +128,17 @@ export const columns: ColumnDef<PathDisplayRow>[] = [
               }}
             >
               Copy Path
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => {
+              open(row.getValue("path")).catch(err => {
+                toast({
+                  variant: "destructive",
+                  title: "Error",
+                  description: err,
+                });
+              })
+            }}>
+              Open Directory
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {

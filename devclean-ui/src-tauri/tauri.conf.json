@@ -7,11 +7,14 @@
   },
   "package": {
     "productName": "devclean-ui",
-    "version": "0.1.0"
+    "version": "0.1.1"
   },
   "tauri": {
     "allowlist": {
       "all": false,
+      "os": {
+        "all": true
+      },
       "clipboard": {
         "all": false,
         "readText": false,
@@ -30,7 +33,7 @@
       },
       "shell": {
         "all": false,
-        "open": true
+        "open": ".*"
       },
       "window": {
         "all": false,
@@ -72,8 +75,8 @@
     "windows": [
       {
         "title": "devclean-ui",
-        "width": 800,
-        "height": 600,
+        "width": 1200,
+        "height": 800,
         "titleBarStyle": "Overlay"
       }
     ],

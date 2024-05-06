@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "./components/mode-toggle";
@@ -21,6 +21,17 @@ function App() {
   const [pickedFolder, setPickedFolder] = useState<string>("");
   const [scanning, setScanning] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const cacheScanFolder = localStorage.getItem("cache-scan-folder");
+    if (cacheScanFolder) {
+      setPickedFolder(cacheScanFolder);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("cache-scan-folder", pickedFolder);
+  }, [pickedFolder]);
 
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">

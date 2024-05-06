@@ -1,15 +1,30 @@
 # devclean
 
-![Crates.io Version](https://img.shields.io/crates/v/devclean)
-[![Rust](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml)
+- [devclean](#devclean)
+  - [Installation](#installation)
+    - [CLI](#cli)
+    - [GUI App](#gui-app)
+  - [Features](#features)
+    - [Find Git Repo with Uncommitted Changes](#find-git-repo-with-uncommitted-changes)
+    - [Find Cache and Dependencies Directories To Clean](#find-cache-and-dependencies-directories-to-clean)
+      - [Supported Projects / Languages](#supported-projects--languages)
+      - [Usage](#usage)
+
+![Crates.io Version](https://img.shields.io/crates/v/devclean) [![Rust](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml) [![publish](https://github.com/HuakunShen/devclean/actions/workflows/tauri-ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/tauri-ci.yml)
 
 `devclean` is a tool and library for cleaning up development directories.
 
 ## Installation
 
+### CLI
+
 ```bash
 cargo install devclean
 ```
+
+### GUI App
+
+The GUI App can be found in the [releases](https://github.com/HuakunShen/devclean/releases).
 
 ## Features
 

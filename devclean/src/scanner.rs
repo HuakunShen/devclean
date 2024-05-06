@@ -11,10 +11,7 @@ use crate::{
 use fs_extra::dir::get_size;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
-use std::{
-    path::{Path, PathBuf},
-    sync::mpsc::{self, Receiver, Sender},
-};
+use std::path::Path;
 
 /// A scanner walks through directories following the depth constraint and stop conditions
 /// All valid paths are sent to the task_tx channel for further processing
@@ -57,27 +54,25 @@ impl Scanner {
         }
     }
 
-    pub fn _scan_recursive(&mut self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
-        if self.pb.is_some() {
-            if path.is_dir() {
-                self.pb
-                    .as_ref()
-                    .unwrap()
-                    .set_message(format!("Scanning: {}", path.to_string_lossy()));
-            }
+    pub fn _scan_recursive(&mut self, path: &Path, depth: u16) -> Vec<AnalyzeTarget> {
+        if self.pb.is_some() && path.is_dir() {
+            self.pb
+                .as_ref()
+                .unwrap()
+                .set_message(format!("Scanning: {}", path.to_string_lossy()));
         }
         if depth > self.depth {
             return vec![];
         }
         let mut targets = vec![];
         for condition in &self.report_conditions {
-            if condition.report(&path) {
-                targets.push(AnalyzeTarget::new(path.clone(), depth, None));
+            if condition.report(path) {
+                targets.push(AnalyzeTarget::new(path.to_path_buf(), depth, None));
                 return targets;
             }
         }
         for stop_condition in &self.stop_conditions {
-            if stop_condition.stop(&path) {
+            if stop_condition.stop(path) {
                 return targets;
             }
         }
@@ -94,11 +89,11 @@ impl Scanner {
                 .unwrap()
                 .finish_with_message("Scan Finished...");
         }
-        return targets;
+        targets
     }
 
     /// This function fills the size field of the AnalyzeTarget in parallel
-    pub fn scan_recursive(&mut self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
+    pub fn scan_recursive(&mut self, path: &Path, depth: u16) -> Vec<AnalyzeTarget> {
         // let start = std::time::Instant::now();
         let mut targets = self._scan_recursive(path, depth);
         // fill targets size field in parallel
@@ -110,14 +105,12 @@ impl Scanner {
 
     /// This is an alternative equivalent to scan_recursive
     /// Scan with rayon parallelism
-    pub fn scan_parallel(&self, path: &PathBuf, depth: u16) -> Vec<AnalyzeTarget> {
-        if self.pb.is_some() {
-            if path.is_dir() {
-                self.pb
-                    .as_ref()
-                    .unwrap()
-                    .set_message(format!("Scanning: {}", path.to_string_lossy()));
-            }
+    pub fn scan_parallel(&self, path: &Path, depth: u16) -> Vec<AnalyzeTarget> {
+        if self.pb.is_some() && path.is_dir() {
+            self.pb
+                .as_ref()
+                .unwrap()
+                .set_message(format!("Scanning: {}", path.to_string_lossy()));
         }
 
         if depth > self.depth {
@@ -126,9 +119,9 @@ impl Scanner {
 
         let mut targets = vec![];
         for condition in &self.report_conditions {
-            if condition.report(&path) {
+            if condition.report(path) {
                 targets.push(AnalyzeTarget::new(
-                    path.clone(),
+                    path.to_path_buf(),
                     depth,
                     Some(get_size(path).unwrap_or(0)),
                 ));
@@ -136,7 +129,7 @@ impl Scanner {
             }
         }
         for stop_condition in &self.stop_conditions {
-            if stop_condition.stop(&path) {
+            if stop_condition.stop(path) {
                 return targets;
             }
         }

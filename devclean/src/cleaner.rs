@@ -1,8 +1,8 @@
+use crate::results::AnalyzeTarget;
 use color_eyre::Result;
 use fs_extra::dir::get_size;
 use human_bytes::human_bytes;
 use indicatif::ProgressBar;
-use crate::results::AnalyzeTarget;
 use std::io::Write;
 
 pub struct Cleaner {

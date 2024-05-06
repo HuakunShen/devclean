@@ -12,6 +12,22 @@
   "tauri": {
     "allowlist": {
       "all": false,
+      "clipboard": {
+        "all": false,
+        "readText": false,
+        "writeText": true
+      },
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
+      "fs": {
+        "exists": true
+      },
       "shell": {
         "all": false,
         "open": true

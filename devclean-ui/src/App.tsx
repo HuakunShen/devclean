@@ -25,6 +25,7 @@ function App() {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Toaster />
+      <div data-tauri-drag-region className="h-8" />
       <div className="container bg-background text-foreground flex flex-col max-h-screen py-2 space-y-4">
         <div className="flex space-x-2">
           <Button

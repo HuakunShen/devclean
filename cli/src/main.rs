@@ -64,7 +64,6 @@ fn main() -> Result<()> {
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
             let start = std::time::Instant::now();
             let mut target_paths = removable_scanner.scan_parallel(&path, 0);
-            println!("Scan Finished in {:?}", start.elapsed());
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {
                 target_paths.clone()
@@ -76,8 +75,16 @@ fn main() -> Result<()> {
                     // Select No by default
                     vec![false; target_paths.len()]
                 };
+                let mut prompt = format!("Pick directories to clean");
+                if args.all {
+                    prompt += " (All Selected by Default)";
+                }
+                if args.dry_run {
+                    prompt += " (Dry Run)";
+                }
+
                 let selections = MultiSelect::with_theme(&ColorfulTheme::default())
-                    .with_prompt("Pick the directories to clean")
+                    .with_prompt(prompt)
                     .items(&target_paths)
                     .defaults(&default_selection[..])
                     .interact()?;

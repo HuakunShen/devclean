@@ -24,10 +24,9 @@ impl Cleaner {
             if !self.dry_run {
                 std::fs::remove_dir_all(&target.path)?;
             }
-            let size = target.size.unwrap_or(get_size(target.path.clone())?);
+            let size = target.size.unwrap_or_else(|| get_size(target.path.clone()).unwrap_or(0));
             self.bytes_cleaned += size as u128;
             pb.inc(1);
-            std::thread::sleep(Duration::from_millis(50));
         }
         Ok(())
     }

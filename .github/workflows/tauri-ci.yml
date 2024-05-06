@@ -79,4 +79,4 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.settings.args }}
-          projectPath: './devclean-ui'
+          projectPath: ./devclean-ui

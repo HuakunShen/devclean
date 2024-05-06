@@ -2,12 +2,17 @@ import { useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import "./App.css";
 import { Button } from "@/components/ui/button";
+import { ThemeProvider } from "@/components/theme-provider";
+import { ModeToggle } from "./components/mode-toggle";
 
 function App() {
   return (
-    <div className="container">
-      <Button>Hello</Button>
-    </div>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <div className="container bg-background text-foreground">
+        <Button>Hello</Button>
+        <ModeToggle />
+      </div>
+    </ThemeProvider>
   );
 }
 

@@ -1,13 +1,19 @@
 use human_bytes::human_bytes;
-use prettytable::format::{self, FormatBuilder, LinePosition};
+use prettytable::format;
 use prettytable::{color, Attr, Cell, Row, Table};
 use std::path::PathBuf;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct AnalyzeTarget {
     pub path: PathBuf,
     pub depth: u16,
     pub size: Option<u64>,
+}
+
+impl PartialOrd for AnalyzeTarget {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 
 impl Ord for AnalyzeTarget {

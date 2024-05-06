@@ -1,5 +1,7 @@
 use clap::{Parser, Subcommand};
+use color_eyre::owo_colors::OwoColorize;
 use color_eyre::Result;
+use colored::*;
 use devclean::cleaner::Cleaner;
 use devclean::{
     results::AnalyzeTargets,
@@ -32,6 +34,9 @@ struct Args {
 
     #[arg(long, help = "Display Relative Path", default_value = "true")]
     relative: bool,
+
+    #[arg(short, long, help = "Display Time", default_value = "false")]
+    time: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -61,8 +66,15 @@ fn main() -> Result<()> {
                 path = std::fs::canonicalize(path)?;
             }
             let removable_scanner = get_project_garbage_scanner(args.depth, true);
-            let mut cleaner = Cleaner::new(args.dry_run, args.all);
+            let start_time = std::time::Instant::now();
             let mut target_paths = removable_scanner.scan_parallel(&path, 0);
+            if args.time {
+                println!(
+                    "\n{} {:?}\n",
+                    "\nScan Time: ".blue().bold(),
+                    start_time.elapsed().green()
+                );
+            }
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {
                 target_paths.clone()
@@ -74,7 +86,7 @@ fn main() -> Result<()> {
                     // Select No by default
                     vec![false; target_paths.len()]
                 };
-                let mut prompt = format!("Pick directories to clean");
+                let mut prompt = "Pick directories to clean".to_string();
                 if args.all {
                     prompt += " (All Selected by Default)";
                 }
@@ -93,11 +105,17 @@ fn main() -> Result<()> {
                 }
                 to_clean
             };
+            let mut cleaner = Cleaner::new(args.dry_run, args.all);
+            let start_time = std::time::Instant::now();
             cleaner.clean_all(&to_clean)?;
+            if args.time {
+                println!("Clean Time: {:?}", start_time.elapsed());
+            }
             AnalyzeTargets(to_clean).to_table().printstd();
             println!(
-                "Total Bytes Cleaned: {}",
-                human_bytes(cleaner.bytes_cleaned as f64)
+                "\n\n{} {}\n\n",
+                "Total Bytes Cleaned:".blue().bold(),
+                human_bytes(cleaner.bytes_cleaned as f64).green()
             );
         }
     }

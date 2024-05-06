@@ -50,26 +50,21 @@ fn main() -> Result<()> {
     match args.command {
         Some(Commands::FindDirtyGit { path, depth }) => {
             let path = path.unwrap_or_else(|| PathBuf::from("."));
-            // turn p into absolute path
             let path = std::fs::canonicalize(path)?;
-            let mut scanner = get_dirty_git_repo_scanner(path.as_path(), depth, false);
-            scanner.scan();
-            let mut targets = vec![];
-            while let Ok(target) = scanner.task_rx.recv() {
-                targets.push(target);
-            }
-            AnalyzeTargets(targets).to_table().printstd();
+            let scanner = get_dirty_git_repo_scanner(depth, true);
+            let found = scanner.scan_parallel(&path, 0);
+            AnalyzeTargets(found).to_table().printstd();
         }
         None => {
             let mut path = args.path.unwrap_or_else(|| PathBuf::from("."));
             if !args.relative {
                 path = std::fs::canonicalize(path)?;
             }
-            let mut removable_scanner =
-                get_project_garbage_scanner(path.as_path(), args.depth, true);
+            let removable_scanner = get_project_garbage_scanner(args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
-            let mut target_paths = removable_scanner.scan_recursive(&path, 0);
-
+            let start = std::time::Instant::now();
+            let mut target_paths = removable_scanner.scan_parallel(&path, 0);
+            println!("Scan Finished in {:?}", start.elapsed());
             target_paths.sort_by(|a, b| b.cmp(a));
             let to_clean = if args.yes {
                 target_paths.clone()

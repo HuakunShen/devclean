@@ -1,6 +1,7 @@
 # devclean
 
 ![Crates.io Version](https://img.shields.io/crates/v/devclean)
+[![Rust](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml)
 
 `devclean` is a tool and library for cleaning up development directories.
 

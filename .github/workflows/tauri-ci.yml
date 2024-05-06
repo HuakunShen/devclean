@@ -14,9 +14,9 @@ jobs:
       fail-fast: false
       matrix:
         settings:
-          - platform: 'macos-14' # for Arm based macs (M1 and above).
+          - platform: 'macos-13' # for Arm based macs (M1 and above).
             args: '--target aarch64-apple-darwin'
-          - platform: 'macos-14' # for Intel based macs.
+          - platform: 'macos-13' # for Intel based macs.
             args: '--target universal-apple-darwin'
           - platform: 'ubuntu-22.04' # for Tauri v1 you could replace this with ubuntu-20.04.
             args: ''
@@ -34,11 +34,11 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
         # webkitgtk 4.0 is for Tauri v1 - webkitgtk 4.1 is for Tauri v2.
         # You can remove the one that doesn't apply to your app to speed up the workflow a bit.
-      - name: Add Mac Target
-        if: matrix.settings.platform == 'macos-14' # This must match the platform value defined above.
-        run: |
-          rustup target add x86_64-apple-darwin
-          rustup target add aarch64-apple-darwin
+      # - name: Add Mac Target
+      #   if: matrix.settings.platform == 'macos-13' # This must match the platform value defined above.
+      #   run: |
+      #     rustup target add x86_64-apple-darwin
+      #     rustup target add aarch64-apple-darwin
           
       - name: setup node
         uses: actions/setup-node@v4
@@ -51,7 +51,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
-          targets: ${{ matrix.settings.platform == 'macos-14' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.settings.platform == 'macos-13' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: Rust cache
         uses: swatinem/rust-cache@v2

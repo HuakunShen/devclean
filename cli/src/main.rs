@@ -1,13 +1,15 @@
 use clap::{Parser, Subcommand};
 use color_eyre::Result;
+use dialoguer::{theme::ColorfulTheme, MultiSelect};
 use fs_extra::dir::get_size;
 use human_bytes::human_bytes;
 use humantime;
+use indicatif::{ProgressBar, ProgressStyle};
 use scanner::{
     results::{AnalyzeTarget, AnalyzeTargets},
     scanner::{get_dirty_git_repo_scanner, get_project_garbage_scanner},
 };
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf, time::Duration};
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
@@ -58,6 +60,21 @@ impl Cleaner {
             need_confirm: !all,
         }
     }
+    fn clean_all(&mut self, targets: &Vec<AnalyzeTarget>) -> Result<()> {
+        let pb = ProgressBar::new(targets.len() as u64);
+        // let spinner_style = ProgressStyle::with_template("{spinner} {wide_msg}").unwrap();
+        // pb.set_style(spinner_style);
+        for target in targets {
+            if !self.dry_run {
+                std::fs::remove_dir_all(&target.path)?;
+            }
+            self.bytes_cleaned += get_size(target.path.clone())? as u128;
+            pb.inc(1);
+            std::thread::sleep(Duration::from_millis(50));
+        }
+        Ok(())
+    }
+
     fn prompt_clean(&mut self, target: &AnalyzeTarget) -> Result<()> {
         let parent = target.path.parent().unwrap();
         let dir_name: String = target.path.file_name().unwrap().to_string_lossy().into();
@@ -66,7 +83,6 @@ impl Cleaner {
         let human_modified_ago = humantime::format_duration(std::time::Duration::from_secs(
             last_modified.elapsed()?.as_secs(),
         ));
-        self.bytes_cleaned += size as u128;
         println!(
             "{}\n  └─ {} ({}) \t\t({} seconds ago)",
             parent.display(),
@@ -95,6 +111,7 @@ impl Cleaner {
             if !self.dry_run {
                 std::fs::remove_dir_all(&target.path)?;
             }
+            self.bytes_cleaned += size as u128;
         }
         Ok(())
     }
@@ -109,7 +126,7 @@ fn main() -> Result<()> {
             let path = path.unwrap_or_else(|| PathBuf::from("."));
             // turn p into absolute path
             let path = std::fs::canonicalize(path)?;
-            let mut scanner = get_dirty_git_repo_scanner(path.as_path(), depth);
+            let mut scanner = get_dirty_git_repo_scanner(path.as_path(), depth, false);
             scanner.scan();
             let mut targets = vec![];
             while let Ok(target) = scanner.task_rx.recv() {
@@ -120,20 +137,35 @@ fn main() -> Result<()> {
         None => {
             let path = args.path.unwrap_or_else(|| PathBuf::from("."));
             let path = std::fs::canonicalize(path)?;
-            let mut removable_scanner = get_project_garbage_scanner(path.as_path(), args.depth);
-            removable_scanner.scan();
-            println!("Finish Scanning!");
-            let mut targets = Vec::new();
+            let mut removable_scanner =
+                get_project_garbage_scanner(path.as_path(), args.depth, true);
             let mut cleaner = Cleaner::new(args.dry_run, args.all);
-            while let Ok(target) = removable_scanner.task_rx.recv() {
-                cleaner.prompt_clean(&target)?;
-                targets.push(target);
+            let mut target_paths = removable_scanner.scan_recursive(&path, 0);
+            target_paths.sort_by(|a, b| b.cmp(a));
+            println!("{}", args.all);
+            let default_selection = if args.all {
+                // Select all by default
+                vec![true; target_paths.len()]
+            } else {
+                // Select No by default
+                vec![false; target_paths.len()]
+            };
+            println!("{:?}", default_selection);
+            let selections = MultiSelect::with_theme(&ColorfulTheme::default())
+                .with_prompt("Pick the directories to clean")
+                .items(&target_paths)
+                .defaults(&default_selection[..])
+                .interact()?;
+            let mut to_clean = vec![];
+            for select in selections {
+                to_clean.push(target_paths[select].clone());
             }
+            cleaner.clean_all(&to_clean)?;
             println!(
                 "Total Bytes Cleaned: {}",
                 human_bytes(cleaner.bytes_cleaned as f64)
             );
-            // AnalyzeTargets(targets).to_table().printstd();
+            AnalyzeTargets(to_clean).to_table().printstd();
         }
     }
 

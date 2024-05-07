@@ -39,7 +39,12 @@ import { delete_dir } from "@/lib/command";
 import { toast, useToast } from "@/components/ui/use-toast";
 import { Progress } from "@/components/ui/progress";
 import { PathHighlight } from "@/components/path-highlight";
-import {open} from '@tauri-apps/api/shell';
+import {
+  CopyIcon,
+  TrashIcon,
+  OpenInNewWindowIcon,
+} from "@radix-ui/react-icons";
+import { open } from "@tauri-apps/api/shell";
 
 export const columns: ColumnDef<PathDisplayRow>[] = [
   {
@@ -127,17 +132,21 @@ export const columns: ColumnDef<PathDisplayRow>[] = [
                   });
               }}
             >
+              <CopyIcon className="w-5 h-5 mr-2" />
               Copy Path
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => {
-              open(row.getValue("path")).catch(err => {
-                toast({
-                  variant: "destructive",
-                  title: "Error",
-                  description: err,
+            <DropdownMenuItem
+              onClick={() => {
+                open(row.getValue("path")).catch((err) => {
+                  toast({
+                    variant: "destructive",
+                    title: "Error",
+                    description: err,
+                  });
                 });
-              })
-            }}>
+              }}
+            >
+              <OpenInNewWindowIcon className="w-5 h-5 mr-2" />
               Open Directory
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -151,6 +160,7 @@ export const columns: ColumnDef<PathDisplayRow>[] = [
                 });
               }}
             >
+              <TrashIcon className="w-5 h-5 mr-2" />
               Delete Directory
             </DropdownMenuItem>
           </DropdownMenuContent>

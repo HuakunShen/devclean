@@ -12,7 +12,6 @@ import {
   FileIcon,
   MagnifyingGlassIcon,
 } from "@radix-ui/react-icons";
-import { AboutDrawer } from "../about-drawer";
 import { AboutSheet } from "../about-sheet";
 
 export function HomePage() {

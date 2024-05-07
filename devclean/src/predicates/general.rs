@@ -26,17 +26,3 @@ pub fn is_git_repo_clean(path: &Path) -> Result<bool> {
 pub fn is_dir_empty(path: &Path) -> bool {
     path.read_dir().map_or(true, |mut dir| dir.next().is_none())
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_is_git_repo_clean() {
-        let x = is_git_repo_clean(Path::new("/Users/hacker/Dev/projects/tauri-demo"));
-        // let x = is_git_repo_clean(Path::new("/Users/hacker/Dev/projects/Nowtu"));
-        println!("{:?}", x);
-        // assert!(is_git_repo_clean(Path::new("tests/fixtures/git")));
-        // assert!(!is_git_repo_clean(Path::new("tests/fixtures/git_dirty")));
-    }
-}

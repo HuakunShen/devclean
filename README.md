@@ -3,6 +3,8 @@
 ![Crates.io Version](https://img.shields.io/crates/v/devclean) [![Rust](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/ci.yml) [![publish](https://github.com/HuakunShen/devclean/actions/workflows/tauri-ci.yml/badge.svg)](https://github.com/HuakunShen/devclean/actions/workflows/tauri-ci.yml)
 
 - [devclean](#devclean)
+  - [Contribution](#contribution)
+    - [Supported Languages/Projects](#supported-languagesprojects)
   - [GUI App](#gui-app)
   - [CLI](#cli)
     - [Installation](#installation)
@@ -13,6 +15,38 @@
         - [Usage](#usage)
 
 `devclean` is a tool and library for cleaning up development directories.
+
+## Contribution
+
+### Supported Languages/Projects
+
+- [x] Node.js `node_modules`
+- [x] Rust `target`
+
+I currently only support Node.js and Rust projects as these are the languages that contribute the most to my disk usage.
+
+If you would like to see support for other languages, please open an issue or a PR.
+
+It's very easy to add support for another language.
+
+Look at examples in [devclean/src/predicates/languages/node.rs](devclean/src/predicates/languages/node.rs) and [devclean/src/predicates/languages/rust.rs](devclean/src/predicates/languages/rust.rs)
+
+Implement the 4 traits for a language predicate struct
+
+- `LanguagePredicate`
+  - Check whether the current path is in a project of this language. 
+  - e.g. Check if parent dir has a `package.json`
+- `Removable`
+  - Check if the current path is removable
+  - e.g. Check if the current path is a `node_modules` directory
+- `Stop`
+  - Check if path traversal should stop
+  - e.g. Stop scanning if the current path is a `node_modules` directory
+- `Reportable`
+  - Sometimes we don't want to remove a directory. This trait is designed as a wrapper layer over `Removable`. If the currently feature is trying to find removable directories to clean, reportable simply calls `is_removable` from `Removable`. In the scanner, `Reportable` is used to determine whether to report the directory as one of the results.
+  - For other features like `find-dirty-git`, reportable means the directory should be reported as a dirty git repo.
+
+
 
 ## GUI App
 

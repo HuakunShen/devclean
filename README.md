@@ -5,6 +5,7 @@
 - [devclean](#devclean)
   - [Contribution](#contribution)
     - [Supported Languages/Projects](#supported-languagesprojects)
+    - [Adding Support for Other Languages](#adding-support-for-other-languages)
   - [GUI App](#gui-app)
   - [CLI](#cli)
     - [Installation](#installation)
@@ -22,6 +23,8 @@
 
 - [x] Node.js `node_modules`
 - [x] Rust `target`
+
+### Adding Support for Other Languages
 
 I currently only support Node.js and Rust projects as these are the languages that contribute the most to my disk usage.
 

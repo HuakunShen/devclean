@@ -11,7 +11,16 @@ edition = "2021"
 tauri-build = { version = "1", features = [] }
 
 [dependencies]
-tauri = { version = "1", features = [ "os-all", "updater", "window-start-dragging", "fs-exists", "dialog-open", "clipboard-write-text", "shell-open"] }
+tauri = { version = "1", features = [
+    "window-show",
+    "os-all",
+    "window-start-dragging",
+    "fs-exists",
+    "dialog-open",
+    "clipboard-write-text",
+    "shell-open",
+    "devtools"
+] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 devclean = { path = "../../devclean" }

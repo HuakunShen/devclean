@@ -66,7 +66,7 @@
         "setSize": false,
         "setSkipTaskbar": false,
         "setTitle": false,
-        "show": false,
+        "show": true,
         "startDragging": true,
         "unmaximize": false,
         "unminimize": false
@@ -77,7 +77,8 @@
         "title": "devclean-ui",
         "width": 1200,
         "height": 800,
-        "titleBarStyle": "Overlay"
+        "titleBarStyle": "Overlay",
+        "visible": false
       }
     ],
     "security": {
@@ -96,9 +97,11 @@
       ]
     },
     "updater": {
-      "active": true,
+      "active": false,
       "dialog": true,
-      "endpoints": ["https://github.com/HuakunShen/devclean/releases/latest/download/latest.json"],
+      "endpoints": [
+        "https://github.com/HuakunShen/devclean/releases/latest/download/latest.json"
+      ],
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDIzRDEzMjcxMjE4NDgwRkYKUldUL2dJUWhjVExSSSs4eFgzRnhURllycncrdy8wQ1dIbUFQRWFWYXpTMGlNZUE1OHlZSGl2eFcK",
       "windows": {
         "installMode": "passive",

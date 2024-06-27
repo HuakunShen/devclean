@@ -78,7 +78,7 @@
         "width": 1200,
         "height": 800,
         "titleBarStyle": "Overlay",
-        "visible": false
+        "visible": true
       }
     ],
     "security": {

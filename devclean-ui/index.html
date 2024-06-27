@@ -1,14 +1,36 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + React + TS</title>
-  </head>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tauri + React + TS</title>
+  <style>
+    body {
+      background-color: white;
+    }
+
+    body.dark {
+      background-color: hsl(222.2, 84%, 4.9%);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    const themeColor = localStorage.getItem("devclean-ui-theme")
+    if (themeColor) {
+      document.body.classList.add(themeColor)
+    } else {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark')
+      } else {
+        document.body.classList.add('light')
+      }
+    }
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
 </html>

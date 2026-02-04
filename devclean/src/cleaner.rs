@@ -21,6 +21,11 @@ impl Cleaner {
     pub fn clean_all(&mut self, targets: &Vec<AnalyzeTarget>) -> Result<()> {
         let pb = ProgressBar::new(targets.len() as u64);
         for target in targets {
+            // Skip if path doesn't exist (may have been removed as part of a parent directory)
+            if !target.path.exists() {
+                pb.inc(1);
+                continue;
+            }
             if !self.dry_run {
                 std::fs::remove_dir_all(&target.path)?;
             }

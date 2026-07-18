@@ -76,6 +76,13 @@ fn main() -> Result<()> {
                 );
             }
             target_paths.sort_by(|a, b| b.cmp(a));
+            if target_paths.is_empty() {
+                println!(
+                    "\n{}\n",
+                    "Nothing to clean. No removable directories found.".green()
+                );
+                return Ok(());
+            }
             let to_clean = if args.yes {
                 target_paths.clone()
             } else {

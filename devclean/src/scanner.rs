@@ -11,6 +11,7 @@ use crate::{
 use fs_extra::dir::get_size;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
+use std::fs::DirEntry;
 use std::path::Path;
 
 /// A scanner walks through directories following the depth constraint and stop conditions
@@ -23,6 +24,8 @@ pub struct Scanner {
     stop_conditions: Vec<Box<dyn Stop>>,
     /// report to task_tx when any of the conditions are met
     report_conditions: Vec<Box<dyn Reportable>>,
+    /// Whether to descend into symlinked directories (default: false, stop on symlinks)
+    follow_symlinks: bool,
     pb: Option<ProgressBar>,
 }
 
@@ -34,6 +37,7 @@ impl Scanner {
         stop_conditions: Vec<Box<dyn Stop>>,
         report_conditions: Vec<Box<dyn Reportable>>,
         cmd_progress_bar: bool,
+        follow_symlinks: bool,
     ) -> Self {
         let pb = if cmd_progress_bar {
             let pb = ProgressBar::new(1);
@@ -50,7 +54,18 @@ impl Scanner {
             // task_rx,
             stop_conditions,
             report_conditions,
+            follow_symlinks,
             pb,
+        }
+    }
+
+    /// Whether the scanner should descend into a directory entry.
+    /// Symlinked directories are only entered when `follow_symlinks` is enabled.
+    fn should_enter_dir(&self, entry: &DirEntry) -> bool {
+        match entry.file_type() {
+            Ok(ft) if ft.is_dir() => true,
+            Ok(ft) if ft.is_symlink() => self.follow_symlinks && entry.path().is_dir(),
+            _ => false,
         }
     }
 
@@ -81,6 +96,10 @@ impl Scanner {
         }
         for entry in path.read_dir().unwrap() {
             let entry = entry.unwrap();
+            let is_symlink = entry.file_type().map(|ft| ft.is_symlink()).unwrap_or(false);
+            if is_symlink && !self.follow_symlinks {
+                continue;
+            }
             targets.extend(self._scan_recursive(&entry.path(), depth + 1))
         }
         if depth == 0 {
@@ -146,7 +165,7 @@ impl Scanner {
             .par_iter()
             .flat_map(|entry| {
                 let path = entry.path();
-                if path.is_dir() {
+                if self.should_enter_dir(entry) {
                     self.scan_parallel(&path, depth + 1)
                 } else {
                     vec![]
@@ -190,7 +209,7 @@ impl Scanner {
     }
 }
 
-pub fn get_dirty_git_repo_scanner(depth: u16, pb: bool) -> Scanner {
+pub fn get_dirty_git_repo_scanner(depth: u16, pb: bool, follow_symlinks: bool) -> Scanner {
     // let (tx, rx) = mpsc::channel::<AnalyzeTarget>(); // Add type annotation for T
     let stop_conditions: Vec<Box<dyn Stop>> =
         vec![Box::new(IsFileStop {}), Box::new(HiddenDirStop {})];
@@ -203,12 +222,13 @@ pub fn get_dirty_git_repo_scanner(depth: u16, pb: bool) -> Scanner {
         stop_conditions,
         report_conditions,
         pb,
+        follow_symlinks,
     )
 }
 
 /// Get a scanner for Rust and Node.js projects
 /// pb is whether project bar should be displayed
-pub fn get_project_garbage_scanner(depth: u16, pb: bool) -> Scanner {
+pub fn get_project_garbage_scanner(depth: u16, pb: bool, follow_symlinks: bool) -> Scanner {
     // let (tx, rx) = mpsc::channel::<AnalyzeTarget>(); // Add type annotation for T
     let stop_conditions: Vec<Box<dyn Stop>> =
         vec![Box::new(IsFileStop {}), Box::new(HiddenDirStop {})];
@@ -224,5 +244,48 @@ pub fn get_project_garbage_scanner(depth: u16, pb: bool) -> Scanner {
         stop_conditions,
         report_conditions,
         pb,
+        follow_symlinks,
     )
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+    use std::fs;
+    use std::os::unix::fs::symlink;
+    use std::path::PathBuf;
+
+    /// root/
+    ///   real/package.json
+    ///   real/node_modules/
+    ///   links/real-link -> ../real  (symlinked project)
+    fn setup_fixture(name: &str) -> PathBuf {
+        let root =
+            std::env::temp_dir().join(format!("devclean_test_{}_{}", std::process::id(), name));
+        let _ = fs::remove_dir_all(&root);
+        fs::create_dir_all(root.join("real/node_modules")).unwrap();
+        fs::write(root.join("real/package.json"), "{}").unwrap();
+        fs::create_dir_all(root.join("links")).unwrap();
+        symlink(root.join("real"), root.join("links/real-link")).unwrap();
+        root
+    }
+
+    fn count_targets(root: &Path, follow_symlinks: bool) -> usize {
+        let scanner = get_project_garbage_scanner(10, false, follow_symlinks);
+        scanner.scan_parallel(root, 0).len()
+    }
+
+    #[test]
+    fn symlinked_projects_are_skipped_by_default() {
+        let root = setup_fixture("skip");
+        assert_eq!(count_targets(&root, false), 1);
+        fs::remove_dir_all(&root).unwrap();
+    }
+
+    #[test]
+    fn symlinked_projects_are_scanned_when_follow_symlinks_enabled() {
+        let root = setup_fixture("follow");
+        assert_eq!(count_targets(&root, true), 2);
+        fs::remove_dir_all(&root).unwrap();
+    }
 }

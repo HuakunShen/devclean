@@ -7,7 +7,7 @@ use tauri::Manager;
 
 #[tauri::command]
 async fn scan(path: PathBuf, depth: u16) -> Result<Vec<AnalyzeTarget>, String> {
-    let scanner = get_project_garbage_scanner(depth, false);
+    let scanner = get_project_garbage_scanner(depth, false, false);
     let mut target_paths = scanner.scan_parallel(&path, 0);
     target_paths.sort_by(|a, b| b.cmp(a));
     Ok(target_paths)

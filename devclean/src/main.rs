@@ -13,7 +13,11 @@ use std::path::PathBuf;
 
 /// Simple program to greet a person
 #[derive(Parser, Debug)]
-#[command(version, about, long_about = "A simple program to clean up project directories.")]
+#[command(
+    version,
+    about,
+    long_about = "A simple program to clean up project directories."
+)]
 struct Args {
     #[command(subcommand)]
     command: Option<Commands>,
@@ -37,6 +41,13 @@ struct Args {
 
     #[arg(short, long, help = "Display Time", default_value = "false")]
     time: bool,
+
+    #[arg(
+        long,
+        help = "Follow Symbolic Links When Scanning",
+        default_value = "false"
+    )]
+    follow_symlinks: bool,
 }
 
 #[derive(Subcommand, Clone, Debug)]
@@ -46,6 +57,12 @@ enum Commands {
         path: Option<PathBuf>,
         #[arg(short, long, help = "Depth Limit", default_value = "10")]
         depth: u16,
+        #[arg(
+            long,
+            help = "Follow Symbolic Links When Scanning",
+            default_value = "false"
+        )]
+        follow_symlinks: bool,
     },
 }
 
@@ -53,10 +70,14 @@ fn main() -> Result<()> {
     color_eyre::install()?;
     let args = Args::parse();
     match args.command {
-        Some(Commands::FindDirtyGit { path, depth }) => {
+        Some(Commands::FindDirtyGit {
+            path,
+            depth,
+            follow_symlinks,
+        }) => {
             let path = path.unwrap_or_else(|| PathBuf::from("."));
             let path = std::fs::canonicalize(path)?;
-            let scanner = get_dirty_git_repo_scanner(depth, true);
+            let scanner = get_dirty_git_repo_scanner(depth, true, follow_symlinks);
             let found = scanner.scan_parallel(&path, 0);
             AnalyzeTargets(found).to_table().printstd();
         }
@@ -65,7 +86,8 @@ fn main() -> Result<()> {
             if !args.relative {
                 path = std::fs::canonicalize(path)?;
             }
-            let removable_scanner = get_project_garbage_scanner(args.depth, true);
+            let removable_scanner =
+                get_project_garbage_scanner(args.depth, true, args.follow_symlinks);
             let start_time = std::time::Instant::now();
             let mut target_paths = removable_scanner.scan_parallel(&path, 0);
             if args.time {
